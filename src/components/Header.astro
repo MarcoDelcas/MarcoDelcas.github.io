@@ -1,0 +1,296 @@
+---
+import { profile, socials } from '../data/portfolio';
+
+const links = [
+	{ label: 'Sobre mí', href: '#about' },
+	{ label: 'Skills', href: '#skills' },
+	{ label: 'Portafolio', href: '#portfolio' },
+	{ label: 'Contacto', href: '#contact' },
+];
+---
+
+<header class="header">
+	<div class="header__container">
+		<a href="/" class="logo">
+			<span class="logo__icon"><iconify-icon icon="mdi:code-braces" width="26" height="26"></iconify-icon></span>
+			<h3>{profile.brand.first}<span>{profile.brand.accent}</span></h3>
+		</a>
+
+		<nav class="header__menu" id="menu">
+			<ul class="header__list">
+				{
+					links.map((link) => (
+						<li>
+							<a class="header__link" href={link.href}>
+								{link.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+			<div class="header__icons">
+				{
+					socials.map((s) => (
+						<a href={s.url} class="social__link" target="_blank" rel="noopener" aria-label={s.name}>
+							<iconify-icon icon={s.icon} width="24" height="24" />
+							<span class="social__tooltip">{s.name}</span>
+						</a>
+					))
+				}
+			</div>
+		</nav>
+
+		<button class="hamburger" type="button" aria-label="Abrir menú" aria-controls="menu" aria-expanded="false">
+			<span></span><span></span><span></span>
+		</button>
+	</div>
+</header>
+
+<script>
+	const header = document.querySelector('.header');
+	const burger = document.querySelector<HTMLButtonElement>('.hamburger');
+	const menu = document.querySelector('.header__menu');
+
+	const toggle = (open?: boolean) => {
+		const isOpen = menu?.classList.toggle('is-active', open) ?? false;
+		burger?.classList.toggle('is-active', isOpen);
+		burger?.setAttribute('aria-expanded', String(isOpen));
+	};
+
+	burger?.addEventListener('click', () => toggle());
+	document.querySelectorAll('.header__link').forEach((link) => link.addEventListener('click', () => toggle(false)));
+
+	// Resalta el enlace de la sección visible
+	const navLinks = document.querySelectorAll<HTMLAnchorElement>('.header__link');
+	const sectionObserver = new IntersectionObserver(
+		(entries) => {
+			entries.forEach((entry) => {
+				if (!entry.isIntersecting) return;
+				navLinks.forEach((a) => a.classList.toggle('active', a.hash === `#${entry.target.id}`));
+			});
+		},
+		{ rootMargin: '-45% 0px -50% 0px' },
+	);
+	document.querySelectorAll('section[id]').forEach((s) => sectionObserver.observe(s));
+
+	window.addEventListener('scroll', () => header?.classList.toggle('scrolled', window.scrollY > 40), { passive: true });
+</script>
+
+<style>
+	/* Barra sólida de ancho completo con borde inferior, como la de moure.dev */
+	.header {
+		position: fixed;
+		z-index: 1000;
+		width: 100%;
+		padding: 0 2rem;
+		display: flex;
+		justify-content: center;
+		background-color: var(--bg);
+		border-bottom: 1px solid var(--border);
+		animation: slide-down 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+		transition: border-color 0.3s;
+	}
+
+	.header.scrolled {
+		border-bottom-color: var(--edge);
+	}
+
+	.header__container {
+		width: 100%;
+		max-width: 1200px;
+		min-height: 6.4rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.logo {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+	}
+
+	.logo__icon {
+		display: grid;
+		place-items: center;
+		width: 3.6rem;
+		height: 3.6rem;
+		color: var(--bg);
+		background-color: var(--accent);
+		border: 1px solid var(--edge);
+		box-shadow: var(--hard-shadow);
+		transition:
+			translate 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.logo:hover .logo__icon {
+		translate: -2px -2px;
+		box-shadow: 5px 5px 0 0 var(--edge);
+	}
+
+	.logo h3 {
+		font-size: 2.2rem;
+		font-weight: var(--weight-display);
+	}
+
+	.logo h3 span {
+		background: var(--gradient-primary) text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.header__menu {
+		display: flex;
+		align-items: center;
+		gap: 3rem;
+	}
+
+	.header__list {
+		list-style: none;
+		display: flex;
+		gap: 2.4rem;
+	}
+
+	.header__link {
+		position: relative;
+		font-size: 1.6rem;
+		font-weight: 500;
+		transition: color 0.3s;
+	}
+
+	.header__link::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		bottom: -4px;
+		width: 100%;
+		height: 2px;
+		background: var(--accent);
+		transform: scaleX(0);
+		transform-origin: right;
+		transition: transform 0.35s ease;
+	}
+
+	.header__link:hover,
+	.header__link.active {
+		color: var(--accent);
+	}
+
+	.header__link:hover::after,
+	.header__link.active::after {
+		transform: scaleX(1);
+		transform-origin: left;
+	}
+
+	.header__icons {
+		display: flex;
+		gap: 1.2rem;
+	}
+
+	.social__link {
+		position: relative;
+		display: grid;
+		place-items: center;
+		transition:
+			color 0.3s,
+			transform 0.3s;
+	}
+
+	.social__link:hover {
+		color: var(--accent);
+		transform: translateY(-3px);
+	}
+
+	.social__tooltip {
+		position: absolute;
+		top: 130%;
+		padding: 0.2rem 0.8rem;
+		font-size: 1.3rem;
+		color: var(--text-color);
+		background: var(--bg);
+		border: 1px solid var(--edge);
+		box-shadow: var(--hard-shadow);
+		white-space: nowrap;
+		opacity: 0;
+		pointer-events: none;
+		transform: translateY(-5px);
+		transition: all 0.25s;
+	}
+
+	.social__link:hover .social__tooltip {
+		opacity: 1;
+		transform: none;
+	}
+
+	.hamburger {
+		display: none;
+		flex-direction: column;
+		gap: 6px;
+		padding: 0.8rem;
+		background: none;
+		border: none;
+		cursor: pointer;
+	}
+
+	.hamburger span {
+		display: block;
+		width: 28px;
+		height: 3px;
+		background: var(--text-color);
+		transition:
+			transform 0.35s,
+			opacity 0.25s;
+	}
+
+	.hamburger.is-active span:nth-child(1) {
+		transform: translateY(9px) rotate(45deg);
+	}
+	.hamburger.is-active span:nth-child(2) {
+		opacity: 0;
+	}
+	.hamburger.is-active span:nth-child(3) {
+		transform: translateY(-9px) rotate(-45deg);
+	}
+
+	@keyframes slide-down {
+		from {
+			transform: translateY(-120%);
+			opacity: 0;
+		}
+	}
+
+	@media (max-width: 860px) {
+		.hamburger {
+			display: flex;
+		}
+
+		.header__menu {
+			position: absolute;
+			top: calc(100% + 1.2rem);
+			left: 2rem;
+			right: 2rem;
+			flex-direction: column;
+			gap: 2.4rem;
+			padding: 3rem 2rem;
+			background-color: var(--bg);
+			border: 1px solid var(--edge);
+			box-shadow: var(--hard-shadow);
+			/* El recorte deja margen a la derecha y abajo para que se vea la sombra */
+			clip-path: inset(0 -8px 100% 0);
+			transition: clip-path 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+		}
+
+		.header__menu.is-active {
+			clip-path: inset(0 -8px -8px 0);
+		}
+
+		.header__list {
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.header__link {
+			font-size: 2rem;
+		}
+	}
+</style>

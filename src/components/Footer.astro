@@ -1,0 +1,115 @@
+---
+import { profile, socials } from '../data/portfolio';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+	<div class="footer__container">
+		<div>
+			<h3 class="footer__brand">{profile.brand.first}<span>{profile.brand.accent}</span></h3>
+			<p>{profile.role} · {profile.location}</p>
+		</div>
+		<nav class="footer__links" aria-label="Enlaces rápidos">
+			<a href="#about">Sobre mí</a>
+			<a href="#skills">Skills</a>
+			<a href="#portfolio">Portafolio</a>
+			<a href="#contact">Contacto</a>
+		</nav>
+		<div class="footer__socials">
+			{
+				socials.map((s) => (
+					<a href={s.url} target="_blank" rel="noopener" aria-label={s.name}>
+						<iconify-icon icon={s.icon} width="24" height="24" />
+					</a>
+				))
+			}
+		</div>
+	</div>
+	<p class="footer__copy">© {year} {profile.fullName}. Desarrollado con Astro.</p>
+</footer>
+
+<button class="btn to-top" type="button" aria-label="Volver arriba">
+	<iconify-icon icon="codicon:triangle-up" width="30" height="30"></iconify-icon>
+</button>
+
+<script>
+	const toTop = document.querySelector('.to-top');
+	toTop?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+	window.addEventListener('scroll', () => toTop?.classList.toggle('show', window.scrollY > 900), { passive: true });
+</script>
+
+<style>
+	.footer {
+		padding: 6rem 2rem 3rem;
+		background-color: var(--bg-alt);
+		border-top: 1px solid var(--edge);
+	}
+
+	.footer__container {
+		max-width: 1200px;
+		margin: 0 auto;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-items: center;
+		gap: 3rem;
+	}
+
+	.footer__brand {
+		font-size: 2.4rem;
+		font-weight: var(--weight-display);
+	}
+
+	.footer__brand span {
+		background: var(--gradient-primary) text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.footer__links,
+	.footer__socials {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 2rem;
+	}
+
+	.footer a {
+		transition: color 0.3s;
+	}
+
+	.footer a:hover {
+		color: var(--accent);
+	}
+
+	.footer__copy {
+		margin-top: 4rem;
+		text-align: center;
+		font-size: 1.4rem;
+		color: var(--text-subtle);
+	}
+
+	.to-top {
+		position: fixed;
+		right: 2rem;
+		bottom: 2rem;
+		z-index: 900;
+		display: grid;
+		place-items: center;
+		width: 5rem;
+		height: 5rem;
+		padding: 0;
+		opacity: 0;
+		transform: translateY(100px);
+		transition:
+			opacity 0.4s,
+			transform 0.4s,
+			translate 0.05s ease,
+			box-shadow 0.05s ease;
+	}
+
+	.to-top.show {
+		opacity: 1;
+		transform: none;
+	}
+
+</style>

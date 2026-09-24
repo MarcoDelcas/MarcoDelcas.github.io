@@ -1,0 +1,471 @@
+---
+import { skills, stack } from '../data/portfolio';
+import { toHtml, toJson } from '../utils/code-tokens';
+
+const lines = toJson(stack);
+const code = toHtml(lines);
+
+// Se duplica la lista para que el carrusel sea continuo
+const track = [...skills, ...skills];
+---
+
+<section class="section skills grid-bg" id="skills">
+	<header class="skills__header reveal">
+		<h2 class="title">Skills</h2>
+		<p class="skills__description">
+			Integro la seguridad en el ciclo de vida del desarrollo de software: automatizo análisis de seguridad en pipelines de
+			CI/CD, trabajo con contenedores y administro entornos Linux, con enfoque en OWASP Top 10 y en el hardening de
+			plataformas SCM.
+		</p>
+	</header>
+
+	<div class="editor box reveal" style={`--reveal-delay:.15s;--lines:${lines.length}`} data-editor>
+		<div class="editor__bar">
+			<span class="dot dot--red"></span>
+			<span class="dot dot--yellow"></span>
+			<span class="dot dot--green"></span>
+			<span class="editor__tab">
+				<iconify-icon icon="vscode-icons:file-type-json" width="16" height="16"></iconify-icon>
+				skills.json
+			</span>
+			<button class="editor__replay" type="button" aria-label="Volver a escribir" title="Volver a escribir">
+				<iconify-icon icon="mdi:replay" width="18" height="18"></iconify-icon>
+			</button>
+		</div>
+
+		<div class="editor__body">
+			<pre class="editor__code" aria-label="skills.json" set:html={`<code>${code}</code>`} />
+		</div>
+
+		<div class="editor__status">
+			<span><iconify-icon icon="mdi:source-branch" width="14" height="14"></iconify-icon> main</span>
+			<span class="editor__status-right">
+				<span>JSON</span>
+				<span>UTF-8</span>
+				<span>Espacios: 2</span>
+			</span>
+		</div>
+	</div>
+
+	<div class="slider reveal" style={`--count:${skills.length}`}>
+		<div class="slide__track">
+			{
+				track.map((s) => (
+					<div class="slide">
+						<span class="tag">{s.name}</span>
+						<iconify-icon icon={s.icon} width="40" height="40" />
+					</div>
+				))
+			}
+		</div>
+	</div>
+</section>
+
+<script>
+	const editor = document.querySelector<HTMLElement>('[data-editor]');
+	const panel = editor?.querySelector<HTMLElement>('.editor__code');
+
+	if (editor && panel) {
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const lines = [...panel.querySelectorAll<HTMLElement>('.line')];
+
+		const cursor = document.createElement('span');
+		cursor.className = 'editor__cursor';
+
+		// Guarda el texto original de cada token para poder reescribirlo
+		const tokens = [...panel.querySelectorAll<HTMLElement>('.tk')];
+		tokens.forEach((t) => (t.dataset.text = t.textContent ?? ''));
+
+		let runId = 0;
+		const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+		// Deja el archivo vacío (solo el cursor en la primera línea)
+		const clear = () => {
+			lines.forEach((line, i) => (line.hidden = i > 0));
+			tokens.forEach((t) => (t.textContent = ''));
+			lines[0]?.firstElementChild?.append(cursor);
+		};
+
+		// Escribe el archivo token por token, como si se tecleara
+		const type = async () => {
+			const id = ++runId;
+
+			if (reduceMotion) {
+				lines.forEach((line) => (line.hidden = false));
+				tokens.forEach((t) => (t.textContent = t.dataset.text ?? ''));
+				lines.at(-1)?.firstElementChild?.append(cursor);
+				return;
+			}
+
+			clear();
+			for (const line of lines) {
+				line.hidden = false;
+				line.firstElementChild?.append(cursor);
+				for (const t of line.querySelectorAll<HTMLElement>('.tk')) {
+					const text = t.dataset.text ?? '';
+					// La sangría aparece de golpe; el resto se teclea
+					if (t.classList.contains('tk--plain')) {
+						t.textContent = text;
+						continue;
+					}
+					for (let i = 1; i <= text.length; i += 2) {
+						if (id !== runId) return;
+						t.textContent = text.slice(0, i + 1);
+						await sleep(16);
+					}
+				}
+				await sleep(60);
+			}
+		};
+
+		// Fija la altura del editor midiendo una copia invisible del archivo completo
+		const body = editor.querySelector<HTMLElement>('.editor__body');
+		const fitHeight = () => {
+			if (!body) return;
+			const ghost = panel.cloneNode(true) as HTMLElement;
+			ghost.querySelectorAll<HTMLElement>('.line').forEach((line) => (line.hidden = false));
+			ghost.querySelectorAll<HTMLElement>('.tk').forEach((t) => (t.textContent = t.dataset.text ?? ''));
+			ghost.querySelector('.editor__cursor')?.remove();
+			ghost.querySelector('.line:last-child .line__code')?.append(cursor.cloneNode());
+			ghost.style.cssText = 'position:absolute;left:0;right:0;top:0;visibility:hidden;pointer-events:none';
+			ghost.setAttribute('aria-hidden', 'true');
+			body.append(ghost);
+			const { paddingTop, paddingBottom } = getComputedStyle(body);
+			body.style.height = `${ghost.offsetHeight + parseFloat(paddingTop) + parseFloat(paddingBottom)}px`;
+			ghost.remove();
+		};
+
+		fitHeight();
+		let lastWidth = body?.clientWidth;
+		new ResizeObserver(() => {
+			if (body?.clientWidth === lastWidth) return;
+			lastWidth = body?.clientWidth;
+			fitHeight();
+		}).observe(editor);
+		document.fonts?.ready.then(fitHeight);
+
+		if (!reduceMotion) clear();
+		editor.querySelector('.editor__replay')?.addEventListener('click', type);
+
+		// Empieza a escribir cuando la terminal aparece en pantalla
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (!entry.isIntersecting) return;
+				observer.disconnect();
+				type();
+			},
+			{ threshold: 0.35 },
+		);
+		observer.observe(editor);
+	}
+</script>
+
+<style>
+	.skills {
+		background-color: var(--bg-deep);
+		padding-top: 6rem;
+		padding-bottom: 18rem;
+		gap: 6rem;
+	}
+
+	.skills__header {
+		max-width: 76rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2rem;
+		text-align: center;
+	}
+
+	.skills__description {
+		font-size: 1.8rem;
+		color: var(--text-muted);
+	}
+
+	/* Terminal tipo editor */
+	.editor {
+		--code-size: 1.5rem;
+		--code-leading: 1.8;
+		width: min(100%, 86rem);
+		overflow: hidden;
+	}
+
+	.editor__bar {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		padding: 0 1.2rem;
+		background: var(--surface);
+		border-bottom: 1px solid var(--edge);
+	}
+
+	.dot {
+		flex-shrink: 0;
+		width: 1.3rem;
+		height: 1.3rem;
+		border-radius: 50%;
+	}
+	.dot--red {
+		background: var(--dot-red);
+	}
+	.dot--yellow {
+		background: var(--dot-yellow);
+	}
+	.dot--green {
+		background: var(--dot-green);
+	}
+
+	.editor__tab {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin-left: 1.2rem;
+		padding: 1rem 1.6rem;
+		font-family: var(--font-code);
+		font-size: 1.3rem;
+		white-space: nowrap;
+		color: var(--text-color);
+		background: var(--bg-deep);
+		border-top: 2px solid var(--accent);
+	}
+
+	.editor__replay {
+		display: grid;
+		place-items: center;
+		margin-left: auto;
+		padding: 0.6rem;
+		color: var(--text-subtle);
+		background: none;
+		border: none;
+		cursor: pointer;
+		transition:
+			color 0.2s,
+			transform 0.4s;
+	}
+
+	.editor__replay:hover {
+		color: var(--accent);
+		transform: rotate(-180deg);
+	}
+
+	/* Altura fija: el script la mide con el archivo completo antes de escribir, así no crece
+	   mientras se teclea. El cálculo por número de líneas es solo el valor inicial sin JS. */
+	.editor__body {
+		position: relative;
+		height: calc(var(--lines) * var(--code-size) * var(--code-leading) + 3.2rem);
+		padding: 1.6rem 0;
+		overflow-x: hidden;
+		overflow-y: auto;
+	}
+
+	.editor__code {
+		counter-reset: line;
+		font-family: var(--font-code);
+		font-size: var(--code-size);
+		line-height: var(--code-leading);
+	}
+
+	/* Número de línea en una columna y el código en otra: las líneas largas se ajustan
+	   dentro de su columna en lugar de desplazar el editor a los lados */
+	.editor__code :global(.line) {
+		display: flex;
+		padding-right: 2rem;
+	}
+
+	.editor__code :global(.line__code) {
+		flex: 1;
+		min-width: 0;
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.editor__code :global(.line)::before {
+		counter-increment: line;
+		content: counter(line);
+		flex-shrink: 0;
+		width: 4.8rem;
+		margin-right: 1.6rem;
+		padding-right: 1.2rem;
+		text-align: right;
+		color: var(--border);
+		border-right: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+	}
+
+	.editor__code :global(.line[hidden]) {
+		display: none;
+	}
+
+	/* Colores de sintaxis */
+	.editor__code :global(.tk--key) {
+		color: var(--syntax-key);
+	}
+	.editor__code :global(.tk--string) {
+		color: var(--syntax-string);
+	}
+	.editor__code :global(.tk--literal) {
+		color: var(--syntax-literal);
+	}
+	.editor__code :global(.tk--punct) {
+		color: var(--syntax-punct);
+	}
+
+	.editor :global(.editor__cursor) {
+		display: inline-block;
+		width: 0.9ch;
+		height: 1.2em;
+		margin-left: 1px;
+		vertical-align: text-bottom;
+		background: var(--accent);
+		animation: cursor-block 1s step-end infinite;
+	}
+
+	@keyframes cursor-block {
+		50% {
+			opacity: 0;
+		}
+	}
+
+	.editor__status {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.4rem 1.4rem;
+		font-family: var(--font-code);
+		font-size: 1.2rem;
+		color: var(--text-subtle);
+		background: var(--surface);
+		border-top: 1px solid var(--edge);
+	}
+
+	.editor__status span {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	.editor__status-right {
+		gap: 1.6rem !important;
+	}
+
+	/* Carrusel infinito */
+	.slider {
+		--slide: 9rem;
+		--gap: 2rem;
+		position: relative;
+		width: min(100%, 1100px);
+		padding: 4rem 0 2rem;
+		overflow: hidden;
+	}
+
+	.slider::before,
+	.slider::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		z-index: 2;
+		width: 12rem;
+		height: 100%;
+		background: linear-gradient(90deg, var(--bg-deep) 0%, transparent 100%);
+		pointer-events: none;
+	}
+
+	.slider::before {
+		left: 0;
+	}
+	.slider::after {
+		right: 0;
+		transform: rotate(180deg);
+	}
+
+	.slide__track {
+		display: flex;
+		gap: var(--gap);
+		width: max-content;
+		padding: 3rem 0;
+		animation: scroll 40s linear infinite;
+	}
+
+	.slide__track:has(.slide:hover) {
+		animation-play-state: paused;
+	}
+
+	@keyframes scroll {
+		to {
+			transform: translateX(calc((var(--slide) + var(--gap)) * var(--count) * -1));
+		}
+	}
+
+	.slide {
+		position: relative;
+		width: var(--slide);
+		height: var(--slide);
+		display: grid;
+		place-items: center;
+		background-color: var(--bg);
+		border: 1px solid var(--edge);
+		box-shadow: var(--hard-shadow);
+		cursor: pointer;
+		transition:
+			translate 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.slide:hover {
+		translate: -3px -3px;
+		box-shadow: var(--hard-shadow-lg);
+	}
+
+	.tag {
+		position: absolute;
+		top: 0;
+		z-index: 3;
+		padding: 0.2rem 0.6rem;
+		font-size: 1.4rem;
+		white-space: nowrap;
+		color: var(--bg);
+		background-color: var(--accent);
+		border: 1px solid var(--edge);
+		box-shadow: var(--hard-shadow);
+		opacity: 0;
+		transition: all 0.2s ease-in-out;
+	}
+
+	.slide:hover .tag {
+		opacity: 1;
+		transform: translateY(-4.6rem);
+	}
+
+	@media (max-width: 600px) {
+		.slider::before,
+		.slider::after {
+			width: 4rem;
+		}
+
+		.dot {
+			display: none;
+		}
+
+		.editor {
+			--code-size: 1.3rem;
+		}
+
+		.editor__tab {
+			margin-left: -1.2rem;
+			padding: 1rem 1.2rem;
+		}
+
+		.editor__code :global(.line) {
+			padding-right: 1.2rem;
+		}
+
+		.editor__code :global(.line)::before {
+			width: 3.2rem;
+			margin-right: 1rem;
+			padding-right: 0.8rem;
+		}
+
+		.editor__status-right span:last-child {
+			display: none;
+		}
+	}
+</style>

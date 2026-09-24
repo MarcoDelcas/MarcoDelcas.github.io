@@ -1,0 +1,252 @@
+:root {
+	/* Paleta de moure.dev (Brais Moure): tema oscuro */
+	/* Dos tonos de negro que se alternan entre secciones */
+	--mo-bg: #1a1a1a;
+	--mo-bg-alt: #262626;
+	--mo-surface: #2a2a2a;
+	--mo-text: #f7f7f7;
+	--mo-blue: #3eb0f9;
+	--mo-green: #00aa47;
+	--mo-amber: #ffa61e;
+	--mo-orange: #ff5500;
+
+	/* Tokens semánticos: los componentes solo usan estos */
+	--text-color: var(--mo-text);
+	--text-muted: color-mix(in srgb, var(--mo-text) 80%, var(--mo-bg));
+	--text-subtle: color-mix(in srgb, var(--mo-text) 55%, var(--mo-bg));
+	--bg: var(--mo-bg);
+	--bg-deep: var(--mo-bg);
+	--bg-alt: var(--mo-bg-alt);
+	--surface: var(--mo-surface);
+	--border: rgb(247 247 247 / 0.2);
+	--accent: var(--mo-blue);
+	--accent-alt: var(--mo-amber);
+	--accent-2: var(--mo-green);
+	--shadow: rgb(0 0 0 / 0.4);
+
+	/* Cajas estilo moure.dev: borde claro y sombra sólida desplazada, sin esquinas redondeadas */
+	--edge: var(--mo-text);
+	--hard-shadow: 3px 3px 0 0 var(--edge);
+	--hard-shadow-lg: 6px 6px 0 0 var(--edge);
+	--radius: 0;
+	--radius-avatar: 0.6rem;
+
+	/* Fondo de cuadrícula de moure.dev: líneas de 1px cada 36px */
+	--grid-line: rgb(247 247 247 / 0.25);
+	--grid:
+		linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+	/* Colores planos: moure.dev no usa degradados en el texto */
+	--gradient-primary: linear-gradient(var(--accent), var(--accent));
+	--gradient-secondary: linear-gradient(var(--accent-alt), var(--accent-alt));
+
+	/* Resaltado de sintaxis de la terminal */
+	--syntax-key: var(--mo-blue);
+	--syntax-string: var(--mo-amber);
+	--syntax-literal: var(--mo-orange);
+	--syntax-punct: var(--text-subtle);
+	--dot-red: #ff5f57;
+	--dot-yellow: #febc2e;
+	--dot-green: #28c840;
+
+	/* Tipografía de moure.dev: Poppins en todo el sitio, títulos en peso 800 */
+	--font-display: 'Poppins', sans-serif;
+	--font-main: 'Poppins', sans-serif;
+	--font-code: Menlo, Consolas, 'Bitstream Vera Sans Mono', monospace;
+	--weight-display: 800;
+	color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	font-size: 62.5%;
+	scroll-behavior: smooth;
+	scroll-padding-top: 10rem;
+}
+
+body {
+	min-height: 100dvh;
+	color: var(--text-color);
+	background-color: var(--bg);
+	font-family: var(--font-main);
+	font-size: 1.6rem;
+	line-height: 1.625;
+	overflow-x: hidden;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+img {
+	max-width: 100%;
+	display: block;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+}
+
+::selection {
+	background: var(--accent);
+	color: var(--bg);
+}
+
+::-webkit-scrollbar {
+	width: 0.8rem;
+}
+::-webkit-scrollbar-track {
+	background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+	background: var(--accent);
+	border: 1px solid var(--edge);
+}
+
+/* Títulos de sección */
+.title {
+	font-family: var(--font-display);
+	font-size: clamp(3.2rem, 5vw, 4.5rem);
+	font-weight: var(--weight-display);
+	line-height: 1.2;
+	color: var(--text-color);
+}
+
+/* Subtítulo pequeño en mayúsculas */
+.smalltitle {
+	font-family: var(--font-main);
+	font-size: 1.4rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	color: var(--accent);
+}
+
+.gradient-secondary {
+	background: var(--gradient-secondary) text;
+	-webkit-text-fill-color: transparent;
+}
+
+/* Cuadrícula (solo en la sección de Skills). Fija al viewport para que las líneas
+   coincidan entre la sección y la onda que entra a ella. */
+.grid-bg {
+	background-image: var(--grid);
+	background-size: 36px 36px;
+	background-position: 18px 18px;
+	background-attachment: fixed;
+}
+
+.section {
+	position: relative;
+	width: 100%;
+	padding: 12rem 2rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* Animación de aparición al hacer scroll */
+.reveal {
+	opacity: 0;
+	transform: translateY(40px);
+	transition:
+		opacity 0.8s ease,
+		transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+	transition-delay: var(--reveal-delay, 0s);
+}
+.reveal.is-visible {
+	opacity: 1;
+	transform: none;
+}
+
+/* Caja con borde y sombra sólida. El hover usa `translate` (no `transform`) para no chocar
+   con la animación de aparición; por eso aquí se declaran las transiciones de ambos. */
+.box {
+	background-color: var(--bg);
+	border: 1px solid var(--edge);
+	border-radius: var(--radius);
+	box-shadow: var(--hard-shadow);
+	transition:
+		opacity 0.8s ease var(--reveal-delay, 0s),
+		transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0s),
+		translate 0.15s ease,
+		box-shadow 0.15s ease;
+}
+
+.box--hover:hover {
+	translate: -3px -3px;
+	box-shadow: var(--hard-shadow-lg);
+}
+
+/* Botón de color plano con texto oscuro: al presionarlo, la sombra desaparece */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.6rem;
+	padding: 0.8rem 1.8rem;
+	font-weight: 500;
+	color: var(--bg);
+	background-color: var(--btn-color, var(--accent));
+	border: 1px solid var(--edge);
+	border-radius: var(--radius);
+	box-shadow: var(--hard-shadow);
+	cursor: pointer;
+	transition:
+		translate 0.05s ease,
+		box-shadow 0.05s ease;
+}
+
+.btn:hover {
+	translate: 3px 3px;
+	box-shadow: none;
+}
+
+.btn--green {
+	--btn-color: var(--mo-green);
+}
+.btn--amber {
+	--btn-color: var(--mo-amber);
+}
+.btn--orange {
+	--btn-color: var(--mo-orange);
+}
+
+/* Keyframes compartidos */
+@keyframes cursor {
+	50% {
+		border-color: transparent;
+	}
+}
+
+@keyframes floating {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-9px);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+	.reveal {
+		opacity: 1;
+		transform: none;
+	}
+}

@@ -1,0 +1,78 @@
+---
+interface Props {
+	position: 'top' | 'bottom';
+	color: string;
+	/** Usa la cuadrícula en el relleno (cuando la sección siguiente la tiene) */
+	grid?: boolean;
+}
+
+const { position, color, grid = false } = Astro.props;
+
+// `area` es la forma rellena de la onda y `curve` solo su borde curvo (para el trazo claro)
+const shapes = {
+	top: {
+		area: 'M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z',
+		curve:
+			'M0,27.35A600.21,600.21,0,0,0,321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3',
+	},
+	bottom: {
+		area: 'M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z',
+		curve:
+			'M1200,95.8C1132.19,118.92,1055.71,111.31,985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35',
+	},
+};
+
+const { area, curve } = shapes[position];
+
+// El relleno es una caja con el mismo fondo que la sección siguiente (color y, si aplica,
+// cuadrícula fija), recortada con la forma de la onda. Así el fondo continúa sin cortes.
+const mask = `url("data:image/svg+xml,${encodeURIComponent(
+	`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'><path d='${area}'/></svg>`,
+)}")`;
+---
+
+<div class={`wave wave--${position}`} aria-hidden="true">
+	<div class:list={["wave__fill", { "grid-bg": grid }]} style={`--wave-color:${color};--wave-mask:${mask}`}></div>
+	<svg class="wave__line" viewBox="0 0 1200 120" preserveAspectRatio="none">
+		<path d={curve} fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke"></path>
+	</svg>
+</div>
+
+<style>
+	.wave {
+		position: absolute;
+		z-index: 2;
+		left: 0;
+		width: 100%;
+		height: clamp(60px, 10vw, 140px);
+		pointer-events: none;
+	}
+
+	.wave--top {
+		top: 0;
+	}
+
+	.wave--bottom {
+		bottom: 0;
+	}
+
+	.wave__fill,
+	.wave__line {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.wave__fill {
+		background-color: var(--wave-color);
+		-webkit-mask: var(--wave-mask) center / 100% 100% no-repeat;
+		mask: var(--wave-mask) center / 100% 100% no-repeat;
+	}
+
+	/* Borde claro de la curva, como los bordes de las cajas */
+	.wave__line {
+		overflow: visible;
+		color: var(--edge);
+	}
+</style>

@@ -1,0 +1,290 @@
+---
+import { profile, skills, socials } from '../data/portfolio';
+
+// Íconos que giran lentamente en el fondo (posiciones deterministas)
+const bgIcons = skills.map((skill, i) => ({
+	icon: skill.icon,
+	top: (i * 13 + 12) % 90,
+	left: (i * 23 + 16) % 90,
+	duration: 60 + (i % 5) * 15,
+	delay: -((i * 17) % 42),
+	originX: [10, -15, 20, -25][i % 4],
+	originY: [10, -15, -20][i % 3],
+	size: [8, 10.5, 13][i % 3],
+}));
+---
+
+<section class="hero">
+	<div class="bg-icons" aria-hidden="true">
+		{
+			bgIcons.map((b) => (
+				<span
+					class="bg-icon"
+					style={`--top:${b.top}%;--left:${b.left}%;--duration:${b.duration}s;--delay:${b.delay}s;--origin-x:${b.originX}vw;--origin-y:${b.originY}vh;--size:${b.size}vmin;`}
+				>
+					<iconify-icon icon={b.icon} />
+				</span>
+			))
+		}
+	</div>
+
+	<div class="hero__container">
+		<div class="hero__content">
+			<h1 class="hero__title">¡Hola! Soy {profile.brand.first}<span class="blink">{profile.brand.accent}</span></h1>
+			<p class="hero__slogan" style={`--chars:${[...profile.slogan].length}`}>{profile.slogan}</p>
+			<p class="hero__location">
+				<iconify-icon icon="mdi:map-marker" width="18" height="18"></iconify-icon>
+				{profile.location}
+			</p>
+			<div class="hero__socials">
+				{
+					socials.map((s, i) => (
+						<a
+							href={s.url}
+							class="hero__social"
+							style={`--i:${i}`}
+							target="_blank"
+							rel="noopener"
+							aria-label={s.name}
+						>
+							<iconify-icon icon={s.icon} width="26" height="26" />
+							<span class="hero__tooltip">{s.name}</span>
+						</a>
+					))
+				}
+			</div>
+			<a href="#portfolio" class="btn hero__cta">
+				Ver proyectos
+				<iconify-icon icon="line-md:arrow-down" width="20" height="20"></iconify-icon>
+			</a>
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		position: relative;
+		z-index: 1;
+		width: 100%;
+		min-height: 85dvh;
+		padding: 12rem 2rem 14rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background-color: var(--bg-deep);
+		overflow: hidden;
+		isolation: isolate;
+	}
+
+	.bg-icons {
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		opacity: 0.5;
+	}
+
+	.bg-icon {
+		position: absolute;
+		top: var(--top);
+		left: var(--left);
+		width: var(--size);
+		height: var(--size);
+		font-size: var(--size);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transform-origin: var(--origin-x) var(--origin-y);
+		animation: move var(--duration) linear infinite var(--delay);
+		backface-visibility: hidden;
+	}
+
+	@keyframes move {
+		to {
+			transform: translateZ(20px) rotate(360deg);
+		}
+	}
+
+	.hero__container {
+		width: 100%;
+		max-width: 1300px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.hero__content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1.6rem;
+		text-align: center;
+	}
+
+	.hero__title {
+		font-family: var(--font-display);
+		font-size: clamp(3.4rem, 6vw, 6rem);
+		font-weight: var(--weight-display);
+		line-height: 1.1;
+		color: var(--text-color);
+		animation: fade-up 0.9s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+	}
+
+	.blink {
+		display: inline-block;
+		animation: flicker 3s linear both 0.6s;
+		transition: color 0.3s;
+	}
+
+	.blink:hover {
+		color: var(--accent-alt);
+		filter: drop-shadow(0 0 12px var(--accent-alt));
+	}
+
+	/* Parpadeo tipo letrero neón */
+	@keyframes flicker {
+		0%, 10%, 10.2%, 20%, 20.6%, 30%, 30.6%, 45%, 55.1%, 57%, 60.1%, 65%, 75.1%, 77%, 85.1%, 86% {
+			opacity: 0;
+		}
+		10.1%, 45.1%, 57.1%, 60%, 75%, 85%, 86.1% {
+			opacity: 1;
+		}
+		20.1%, 30.1%, 30.5%, 50%, 55%, 65.1%, 77.1% {
+			opacity: 1;
+			color: var(--accent-alt);
+			filter: drop-shadow(0 0 12px var(--accent-alt));
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
+	/* Efecto máquina de escribir */
+	.hero__slogan {
+		--spacing: 0.3rem;
+		width: calc(var(--chars) * (1ch + var(--spacing)) + 0.2ch);
+		max-width: 100%;
+		font-family: var(--font-code);
+		font-size: clamp(1.4rem, 2.4vw, 2rem);
+		letter-spacing: var(--spacing);
+		white-space: nowrap;
+		overflow: hidden;
+		color: var(--accent);
+		background: var(--gradient-primary) text;
+		-webkit-text-fill-color: transparent;
+		border-right: 4px solid var(--accent);
+		animation:
+			typing 2s steps(var(--chars), end) 1s both,
+			cursor 0.5s step-end infinite alternate;
+	}
+
+	@keyframes typing {
+		from {
+			width: 0;
+		}
+	}
+
+	.hero__location {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 1.5rem;
+		color: var(--text-muted);
+		animation: fade-up 0.8s 1.2s both;
+	}
+
+	.hero__socials {
+		display: flex;
+		gap: 2rem;
+		margin-top: 1rem;
+	}
+
+	.hero__social {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: 5rem;
+		height: 5rem;
+		background-color: var(--bg);
+		border: 1px solid var(--edge);
+		box-shadow: var(--hard-shadow);
+		transition:
+			color 0.15s,
+			translate 0.15s ease,
+			box-shadow 0.15s ease;
+		animation: bounce-in-bottom 1.5s calc(1.9s + var(--i) * 0.1s) both;
+	}
+
+	.hero__social:hover {
+		color: var(--accent);
+		translate: -3px -3px;
+		box-shadow: var(--hard-shadow-lg);
+	}
+
+	.hero__tooltip {
+		position: absolute;
+		top: 125%;
+		padding: 0.2rem 0.8rem;
+		font-size: 1.3rem;
+		color: var(--text-color);
+		background-color: var(--bg);
+		border: 1px solid var(--edge);
+		box-shadow: var(--hard-shadow);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.25s;
+	}
+
+	.hero__social:hover .hero__tooltip {
+		opacity: 1;
+	}
+
+	@keyframes bounce-in-bottom {
+		0% {
+			opacity: 0;
+			transform: translateY(500px);
+			animation-timing-function: ease-in;
+		}
+		38% {
+			opacity: 1;
+			transform: translateY(0);
+			animation-timing-function: ease-out;
+		}
+		55% {
+			transform: translateY(65px);
+			animation-timing-function: ease-in;
+		}
+		72% {
+			transform: translateY(0);
+			animation-timing-function: ease-out;
+		}
+		81% {
+			transform: translateY(28px);
+			animation-timing-function: ease-in;
+		}
+		90% {
+			transform: translateY(0);
+			animation-timing-function: ease-out;
+		}
+		95% {
+			transform: translateY(8px);
+			animation-timing-function: ease-in;
+		}
+		100% {
+			transform: translateY(0);
+			animation-timing-function: ease-out;
+		}
+	}
+
+	.hero__cta {
+		margin-top: 1.6rem;
+		font-size: 1.6rem;
+		animation: fade-up 0.8s 2.4s both;
+	}
+
+	@keyframes fade-up {
+		from {
+			opacity: 0;
+			transform: translateY(30px);
+		}
+	}
+</style>

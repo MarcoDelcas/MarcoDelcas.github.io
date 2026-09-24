@@ -1,0 +1,280 @@
+---
+import { Image } from 'astro:assets';
+import { education, experience, profile } from '../data/portfolio';
+---
+
+<section class="section about" id="about">
+	<article class="about__container">
+		<div class="about__profile reveal">
+			<div class="profile__box box box--hover">
+				<Image src={profile.avatar} alt={`Foto de perfil de ${profile.fullName}`} class="profile__img" width={300} height={300} densities={[1, 1.5]} />
+			</div>
+			<a class="btn btn--amber about__chip about__chip--cv" href={profile.cv} target="_blank" rel="noopener">
+				<iconify-icon icon="uil:arrow-up-left" width="22" height="22"></iconify-icon>
+				descargar cv
+				<iconify-icon icon="iwwa:file-pdf" width="22" height="22"></iconify-icon>
+			</a>
+		</div>
+
+		<div class="about__content reveal" style="--reveal-delay:.15s">
+			<h2 class="title">Sobre mí</h2>
+			<h3 class="gradient-secondary about__name">{profile.fullName}</h3>
+			{profile.bio.map((p) => <p class="about__bio">{p}</p>)}
+			<h4 class="smalltitle about__focus-title">Áreas de enfoque</h4>
+			<ul class="about__focus box">
+				{
+					profile.focus.map((item) => (
+						<li>
+							<iconify-icon icon="mdi:shield-check-outline" width="20" height="20" />
+							{item}
+						</li>
+					))
+				}
+			</ul>
+		</div>
+	</article>
+
+	<div class="about__experience">
+		<h3 class="title about__subtitle reveal">Experiencia profesional</h3>
+		<ol class="timeline timeline--color timeline--green">
+			{
+				experience.map((job, i) => (
+					<li class="timeline__item box box--hover reveal" style={`--reveal-delay:${i * 0.12}s`}>
+						{job.period && <span class="timeline__period">{job.period}</span>}
+						<h4>{job.title}</h4>
+						<p class="timeline__company">{job.place}</p>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+
+	<div class="about__experience">
+		<h3 class="title about__subtitle reveal">Formación e idiomas</h3>
+		<ol class="timeline timeline--color timeline--amber">
+			{
+				education.map((item, i) => (
+					<li class="timeline__item box box--hover reveal" style={`--reveal-delay:${i * 0.12}s`}>
+						{item.period && <span class="timeline__period">{item.period}</span>}
+						<h4>{item.title}</h4>
+						<p class="timeline__company">{item.place}</p>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.about {
+		background-color: var(--bg-alt);
+		padding-top: 14rem;
+		padding-bottom: 16rem;
+		gap: 8rem;
+	}
+
+	.about__container {
+		width: 100%;
+		max-width: 1200px;
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 6rem;
+	}
+
+	.about__profile {
+		position: relative;
+	}
+
+	/* Foto como el avatar de moure.dev: borde claro, sombra sólida y se levanta con el hover */
+	.profile__box {
+		width: min(30rem, 70vw);
+		aspect-ratio: 1;
+		border-radius: var(--radius-avatar);
+		overflow: hidden;
+	}
+
+	.profile__img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.6s;
+	}
+
+	.profile__box:hover .profile__img {
+		transform: scale(1.04);
+	}
+
+	.about__chip {
+		position: absolute;
+		z-index: 2;
+		padding: 0.6rem 1.4rem;
+		font-size: 1.5rem;
+		white-space: nowrap;
+		animation: floating 5s ease-in-out infinite;
+	}
+
+	.about__chip:hover {
+		animation-play-state: paused;
+	}
+
+	.about__chip--cv {
+		top: 56%;
+		left: 88%;
+		animation-delay: -2.5s;
+	}
+
+	/* Descripción justificada; la división de palabras evita espacios grandes entre ellas */
+	.about__bio {
+		text-align: justify;
+		hyphens: auto;
+	}
+
+	.about__content {
+		max-width: 540px;
+		display: flex;
+		flex-direction: column;
+		gap: 1.2rem;
+		font-size: 1.7rem;
+	}
+
+	.about__name {
+		font-family: var(--font-display);
+		font-size: 2.6rem;
+		font-weight: var(--weight-display);
+	}
+
+	.about__focus-title {
+		margin-top: 0.8rem;
+	}
+
+	.about__focus {
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+		padding: 1.6rem 2rem;
+		font-size: 1.5rem;
+		color: var(--text-muted);
+	}
+
+	.about__focus li {
+		display: flex;
+		gap: 1rem;
+	}
+
+	.about__focus iconify-icon {
+		flex-shrink: 0;
+		margin-top: 0.2rem;
+		color: var(--accent);
+	}
+
+	.about__experience {
+		width: 100%;
+		max-width: 900px;
+	}
+
+	.about__subtitle {
+		margin-bottom: 4rem;
+	}
+
+	.timeline {
+		list-style: none;
+		position: relative;
+		padding-left: 3rem;
+		display: flex;
+		flex-direction: column;
+		gap: 3rem;
+	}
+
+	.timeline::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: 0.6rem;
+		width: 2px;
+		background: var(--edge);
+	}
+
+	.timeline__item {
+		position: relative;
+		padding: 2rem 2.4rem;
+	}
+
+	/* Marcador cuadrado sobre la línea de tiempo */
+	.timeline__item::before {
+		content: '';
+		position: absolute;
+		top: 2.6rem;
+		left: -3.05rem;
+		width: 1.4rem;
+		height: 1.4rem;
+		background: var(--accent);
+		border: 1px solid var(--edge);
+	}
+
+	.timeline__item h4 {
+		font-size: 2rem;
+	}
+
+	.timeline__period {
+		font-family: var(--font-code);
+		font-size: 1.4rem;
+		color: var(--accent-alt);
+	}
+
+	.timeline__company {
+		color: var(--accent-2);
+		font-weight: 500;
+	}
+
+	/* Recuadros de color con letras blancas (título) y negras (periodo y lugar):
+	   verde en Experiencia profesional y ámbar en Formación e idiomas */
+	.timeline--green {
+		--tl-color: var(--mo-green);
+	}
+
+	.timeline--amber {
+		--tl-color: var(--mo-amber);
+		/* El blanco sobre ámbar tiene poco contraste: sombra sólida negra para legibilidad */
+		--tl-title-shadow: 2px 2px 0 var(--mo-bg);
+	}
+
+	.timeline--color .timeline__item {
+		background-color: var(--tl-color);
+	}
+
+	.timeline--color .timeline__item h4 {
+		color: #fff;
+		font-size: 2.2rem;
+		font-weight: var(--weight-display);
+		text-shadow: var(--tl-title-shadow, none);
+	}
+
+	.timeline--color .timeline__period,
+	.timeline--color .timeline__company {
+		color: var(--mo-bg);
+		font-weight: 500;
+	}
+
+	@media (max-width: 860px) {
+		.about__container {
+			flex-direction: column;
+		}
+
+		.about__chip {
+			font-size: 1.4rem;
+		}
+
+		.about__chip--cv {
+			top: auto;
+			bottom: -2rem;
+			left: 0;
+			right: 0;
+			width: fit-content;
+			margin-inline: auto;
+		}
+	}
+</style>
